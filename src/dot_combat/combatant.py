@@ -1,18 +1,19 @@
-"""Contains the Combatant class"""
+"""Contains the Combatant class."""
 from typing import Optional
-from unittest.mock import NonCallableMagicMock
 
 from . import helpers as h
 
 
 class Combatant:
+    """An agent in a combat. Has at least initiative, attacks, and hit points."""
+
     def __init__(
         self,
         max_hit_points: int,
         current_hit_points: Optional[int] = None,
         control: str = "DM",
     ):
-        """New instance of a Combatant. Needs"""
+        """New instance of a Combatant."""
         self.control: str = control
         self.max_hit_points: int = max_hit_points
         self.current_hit_points: int = (
@@ -21,12 +22,11 @@ class Combatant:
         self.conscious = self.current_hit_points > 0
 
     def is_conscious(self) -> bool:
+        """Is the combatant currently conscious?"""
         return self.current_hit_points > 0
 
-    def take_damage(
-        self, hp_damage: int, damage_type: h.DamageType
-    ) -> None:
-        """Damage the combatant. Combatants become unconscious at zero current_hit_points"""
+    def take_damage(self, hp_damage: int, damage_type: h.DamageType) -> None:
+        """Damage the combatant. Current_hit_points cannot fall below zero."""
         self.conscious = hp_damage < self.current_hit_points
         if self.conscious:
             self.current_hit_points -= hp_damage
@@ -34,7 +34,7 @@ class Combatant:
             self.current_hit_points = 0
 
     def heal(self, hp_heal: int) -> None:
-        """Heal the combatant. Cannot exceed max_hit_points."""
+        """Heal the combatant. Current_hit_points cannot exceed max_hit_points."""
         if (self.current_hit_points + hp_heal) < self.max_hit_points:
             self.current_hit_points += hp_heal
         else:
