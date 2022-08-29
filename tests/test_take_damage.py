@@ -28,8 +28,8 @@ def test_combatants_unconscious_at_zero_hp() -> None:
     assert this_combatant.current_hit_points == 1
     assert this_combatant.conscious is True
     this_combatant.take_damage(hp_damage=1, damage_type=DamageType.ACID)
-    assert this_combatant.conscious is False
     assert this_combatant.current_hit_points == 0
+    assert this_combatant.conscious is False
 
 
 def test_healing_is_recorded() -> None:
