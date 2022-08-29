@@ -4,7 +4,7 @@ from src.dot_combat.helpers import DamageType
 
 
 def test_combatant_creation_hit_points() -> None:
-    """current_hit_points defaults to max_hit_points"""
+    """Current_hit_points defaults to max_hit_points."""
     this_combatant = Combatant(max_hit_points=10)
     assert this_combatant.max_hit_points == 10
     assert this_combatant.current_hit_points == 10
