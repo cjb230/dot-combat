@@ -21,10 +21,6 @@ class Combatant:
         )
         self.conscious = self.current_hit_points > 0
 
-    def is_conscious(self) -> bool:
-        """Is the combatant currently conscious?"""
-        return self.current_hit_points > 0
-
     def take_damage(self, hp_damage: int, damage_type: h.DamageType) -> None:
         """Damage the combatant. Current_hit_points cannot fall below zero."""
         self.conscious = hp_damage < self.current_hit_points

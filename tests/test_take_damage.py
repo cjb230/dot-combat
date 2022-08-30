@@ -1,6 +1,6 @@
 """Test cases for the Combatant class."""
-from src.dot_combat.combatant import Combatant
-from src.dot_combat.helpers import DamageType
+from dot_combat.combatant import Combatant
+from dot_combat.helpers import DamageType
 
 
 def test_combatant_creation_hit_points() -> None:
