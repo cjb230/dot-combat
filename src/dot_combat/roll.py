@@ -1,11 +1,11 @@
-"""Basic die roller"""
+"""Basic die roller."""
 import random as rnd
 from typing import Tuple
 
 
 def single_die_roll(sides: int) -> int:
     """Roll a die of a given size."""
-    return rnd.randrange(1, sides + 1, 1)
+    return rnd.randrange(1, sides + 1, 1)  # noqa: S311
 
 
 def dice_description_result(dice_num: int, dice_size: int) -> int:
@@ -19,8 +19,10 @@ def dice_description_parser(dice_roll_description: str) -> Tuple[int, int]:
     try:
         dice_num = int(dice_num_str) if dice_num_str else 1
         dice_size = int(dice_size_str)
-    except ValueError:
-        raise ValueError(f"Could not evaluate dice expression: {dice_roll_description}")
+    except ValueError as err:
+        raise ValueError(
+            f"Could not evaluate dice expression: {dice_roll_description}"
+        ) from err
     return dice_num, dice_size
 
 
@@ -47,10 +49,6 @@ def roll(full_roll_description: str) -> int:
     sign_present = set("+-").intersection(set(full_roll_description))
     if sign_present and "d" in full_roll_description:
         sign = sign_present.pop()
-        assert len(sign_present) == 0, (
-            "Received roll_description without multiple +- signs: "
-            + full_roll_description
-        )
         dice_roll_description, constant_str = full_roll_description.split(sign)
     elif "d" in full_roll_description:
         dice_roll_description = full_roll_description
