@@ -5,7 +5,7 @@ from typing import Tuple
 
 def single_die_roll(sides: int) -> int:
     """Roll a die of a given size."""
-    return rnd.randrange(1, sides+1, 1)
+    return rnd.randrange(1, sides + 1, 1)
 
 
 def dice_description_result(dice_num: int, dice_size: int) -> int:
@@ -31,7 +31,7 @@ def constant_evaluator(constant: str) -> int:
 
 def roll(full_roll_description: str) -> int:
     """Return a result for a standard notation die description.
-    
+
     Expected format is "xdy+c" where:
         x is the number of die to roll and can be omitted
         d is mandatory if y is present
@@ -47,7 +47,10 @@ def roll(full_roll_description: str) -> int:
     sign_present = set("+-").intersection(set(full_roll_description))
     if sign_present and "d" in full_roll_description:
         sign = sign_present.pop()
-        assert len(sign_present) == 0, "Received roll_description without multiple +- signs: " + full_roll_description
+        assert len(sign_present) == 0, (
+            "Received roll_description without multiple +- signs: "
+            + full_roll_description
+        )
         dice_roll_description, constant_str = full_roll_description.split(sign)
     elif "d" in full_roll_description:
         dice_roll_description = full_roll_description
@@ -55,7 +58,9 @@ def roll(full_roll_description: str) -> int:
         constant_str = full_roll_description
 
     if dice_roll_description:
-        dice_num, dice_size = dice_description_parser(dice_roll_description=dice_roll_description)
+        dice_num, dice_size = dice_description_parser(
+            dice_roll_description=dice_roll_description
+        )
         dice_score = dice_description_result(dice_num=dice_num, dice_size=dice_size)
     if constant_str:
         if sign:
