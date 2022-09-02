@@ -2,6 +2,7 @@
 from typing import Optional
 
 from . import helpers as h
+from . import roll as r
 
 
 class Combatant:
@@ -35,3 +36,10 @@ class Combatant:
             self.current_hit_points += hp_heal
         else:
             self.current_hit_points = self.max_hit_points
+
+    def roll_initiative(self, dex_modifier: int=0) -> int:
+        """Returns _and_ stores initiative of d20 plus supplied modifier."""
+        result =  r.roll(full_roll_description="d20")
+        result += dex_modifier
+        self.initiative = result
+        return result
