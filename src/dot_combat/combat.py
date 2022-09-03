@@ -1,5 +1,6 @@
 """Contains the Combat class."""
 from typing import List
+from typing import Union
 
 from . import combatant as c
 
@@ -15,8 +16,8 @@ class Combat:
         self.current_initiative: int = 0
         self.initiative_order: dict = {}
         self.combatant_list: List[c.Combatant] = combatant_list
-        self.current_combatant: c.Combatant = None
-        self.used_initiatives: List[int] = None
+        self.current_combatant: Union[c.Combatant, None] = None
+        self.used_initiatives: List[int] = []
 
     def populate_used_initiatives(self) -> None:
         """Recreate the used_initiatives list."""

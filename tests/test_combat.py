@@ -51,6 +51,11 @@ def test_add_combatant(mocker, test_combat):
     test_combat.add_combatant(new_combatant=additional_combatant_2)
     assert len(test_combat.combatant_list) == 4
     assert len(test_combat.initiative_order[1]) == 4
+    mocker.patch("dot_combat.roll.single_die_roll", return_value=2)
+    additional_combatant_3 = Combatant(
+        max_hit_points=5, current_hit_points=1, control="DM"
+    )
+    test_combat.add_combatant(new_combatant=additional_combatant_3)
 
 
 def test_add_combatants(test_combat):
@@ -112,6 +117,22 @@ def test_next_combatant(test_combat, test_combatant):
     assert test_combat.next_combatant() == test_combatant_3
     test_combat.current_combatant = test_combatant_3
     assert test_combat.next_combatant() == test_combatant_4
+
+    test_combat.initiative_order = {
+        10: [
+            test_combat.combatant_list[0],
+            test_combat.combatant_list[1],
+            test_combatant_3,
+            test_combatant_4,
+        ],
+    }
+    test_combat.populate_used_initiatives()
+    test_combat.current_initiative = 10
+    test_combat.current_combatant = test_combat.combatant_list[0]
+    assert test_combat.next_combatant() == test_combat.combatant_list[1]
+    test_combat.current_combatant = test_combat.combatant_list[1]
+    assert test_combat.next_combatant() == test_combatant_3
+
 
 def test_advance_combatant(mocker, test_combat):
     """Should turn next_combatant() into current_combatant."""
