@@ -15,6 +15,11 @@ class Combat:
         self.current_combatant: c.Combatant = None
         self.used_initiatives: List[int] = None
 
+    def populate_used_initiatives(self) -> None:
+        """Recreate the used_initiatives list."""
+        self.used_initiatives = sorted(self.initiative_order.keys(), reverse=True)
+
+
     def fill_initiative_list(self) -> None:
         """Populates initiative_order dict.
         
@@ -25,7 +30,7 @@ class Combat:
                 self.initiative_order[initiative].append(combatant)
             else:
                 self.initiative_order[initiative] = [combatant]
-        self.used_initiatives = sorted(self.initiative_order.keys(), reverse=True)
+        self.populate_used_initiatives()
 
     def add_combatant(self, new_combatant: c.Combatant) -> None:
         """Adds supplied combatant to combatant_list, and to initiative_order if that is populated."""
@@ -69,7 +74,8 @@ class Combat:
         if num_equal_initiative_combatants > 1 and self.initiative_order[self.current_initiative][-1] != self.current_combatant:
             for position, combatant in enumerate(self.initiative_order[self.current_initiative]):
                 if combatant == self.current_combatant:
-                    #return 3000
+                    #return self.current_initiative, position
+                    #return self.current_initiative, position, self.initiative_order
                     return self.initiative_order[self.current_initiative][position + 1]
         return self.initiative_order[self.next_initiative][0]
 

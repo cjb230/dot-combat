@@ -81,17 +81,29 @@ def test_next_combatant(mocker, test_combat):
     assert test_combat.next_combatant() == test_combat.combatant_list[1]
 
 
-def test_advance_combatant(mocker, test_combat):
+"""def test_advance_combatant(mocker, test_combat):
     mocker.patch("dot_combat.roll.single_die_roll", return_value=10)
     test_combat.fill_initiative_list()
     test_combat.start_combat()
+    assert test_combat.current_combatant == test_combat.combatant_list[0]
+    assert test_combat.next_combatant() == test_combat.combatant_list[1]
     test_combat.advance_combatant()
     assert test_combat.current_combatant == test_combat.combatant_list[1]
-    assert test_combat.next_combatant() == test_combat.combatant_list[0]
+    assert test_combat.next_combatant() == test_combat.combatant_list[0]"""
+
+
+def test_next_initiative(test_combat):
+    test_combat.initiative_order = {5: [], 10: [], 15: []}
+    test_combat.populate_used_initiatives()
+    test_combat.current_initiative = 15
+    assert test_combat.next_initiative() == 10
+    test_combat.current_initiative = 10
+    assert test_combat.next_initiative() == 5
+    test_combat.current_initiative = 5
+    assert test_combat.next_initiative() == 15
+
 
 """
-def test_next_initiative():
-
 def test_advance_initiative():
 
 def test_advance_round():
