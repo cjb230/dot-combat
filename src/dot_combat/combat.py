@@ -90,6 +90,10 @@ class Combat:
             ):
                 if combatant == self.current_combatant:
                     return self.initiative_order[self.current_initiative][position + 1]
+            raise ValueError(
+                f"next_combatant() could not find {str(self.current_combatant)}"
+                f" in the list for initiative {self.current_initiative}"
+            )
         return self.initiative_order[self.next_initiative()][0]
 
     def advance_combatant(self) -> c.Combatant:
