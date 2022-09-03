@@ -3,9 +3,12 @@ from typing import List
 
 from . import combatant as c
 
+
 class Combat:
     """Keeps a collection of Combatants and tracks progress of fight."""
+
     def __init__(self, combatant_list: List[c.Combatant]):
+        """New instance with the supplied list of Combatants."""
         self.has_started: bool = False
         self.has_finished: bool = False
         self.current_round: int = 0
@@ -19,11 +22,11 @@ class Combat:
         """Recreate the used_initiatives list."""
         self.used_initiatives = sorted(self.initiative_order.keys(), reverse=True)
 
-
     def fill_initiative_list(self) -> None:
         """Populates initiative_order dict.
-        
-        Each combatant in combatant_list generates its own initiative"""
+
+        Each combatant in combatant_list generates its own initiative
+        """
         for combatant in self.combatant_list:
             initiative = combatant.roll_initiative(dex_modifier=0)
             if initiative in self.initiative_order:
@@ -33,7 +36,10 @@ class Combat:
         self.populate_used_initiatives()
 
     def add_combatant(self, new_combatant: c.Combatant) -> None:
-        """Adds supplied combatant to combatant_list, and to initiative_order if that is populated."""
+        """Adds supplied combatant to combatant_list.
+
+        Also adds combatant to initiative_order if that is populated.
+        """
         self.combatant_list.append(new_combatant)
         if self.initiative_order:
             new_initiative = new_combatant.roll_initiative()
@@ -69,15 +75,21 @@ class Combat:
         self.has_started = True
 
     def next_combatant(self) -> c.Combatant:
-        """Return the combatant that will be next, without advancing current_combatant."""
-        num_equal_initiative_combatants = len(self.initiative_order[self.current_initiative])
-        if num_equal_initiative_combatants > 1 and self.initiative_order[self.current_initiative][-1] != self.current_combatant:
-            for position, combatant in enumerate(self.initiative_order[self.current_initiative]):
+        """Return the combatant that will be next."""
+        num_equal_initiative_combatants = len(
+            self.initiative_order[self.current_initiative]
+        )
+        if (
+            num_equal_initiative_combatants > 1
+            and self.initiative_order[self.current_initiative][-1]
+            != self.current_combatant
+        ):
+            for position, combatant in enumerate(
+                self.initiative_order[self.current_initiative]
+            ):
                 if combatant == self.current_combatant:
-                    #return self.current_initiative, position
-                    #return self.current_initiative, position, self.initiative_order
                     return self.initiative_order[self.current_initiative][position + 1]
-        return self.initiative_order[self.next_initiative][0]
+        return self.initiative_order[self.next_initiative()][0]
 
     def advance_combatant(self) -> c.Combatant:
         """Advance the combatant by one and return them."""
@@ -85,17 +97,18 @@ class Combat:
         return self.current_combatant
 
     def next_initiative(self) -> int:
-        """Returns the next initiative value for the next combatant, without changing the current initiative."""
+        """Returns the next initiative value."""
         for this_initiative in self.used_initiatives:
             if this_initiative < self.current_initiative:
                 return this_initiative
         return max(self.used_initiatives)
 
     def advance_initiative(self) -> None:
-        """Advance the initiative
-        
+        """Advance the initiative.
+
         Goes to the next used initiative, or back to the highest if currently
-        at the lowest used initiative."""
+        at the lowest used initiative.
+        """
         self.current_initiative = self.next_initiative()
 
     def advance_round(self) -> int:

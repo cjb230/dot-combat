@@ -37,9 +37,9 @@ class Combatant:
         else:
             self.current_hit_points = self.max_hit_points
 
-    def roll_initiative(self, dex_modifier: int=0) -> int:
+    def roll_initiative(self, dex_modifier: int = 0) -> int:
         """Returns _and_ stores initiative of d20 plus supplied modifier."""
-        result =  r.roll(full_roll_description="d20")
+        result = r.roll(full_roll_description="d20")
         result += dex_modifier
         self.initiative = result
         return result
