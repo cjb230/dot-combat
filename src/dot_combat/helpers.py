@@ -37,3 +37,26 @@ class Conditions(Enum):
     RESTRAINED = 12
     STUNNED = 13
     UNCONSCIOUS = 14
+
+
+class FightingStatus(Enum):
+    """Is the Combatant currently trying to fight?"""
+
+    FIGHTING = 1
+    FLEEING = 2
+    FLED = 3
+
+
+class RemovalConditions(Enum):
+    """The conditions under which a Combatant will normally be removed from combat."""
+
+    ZERO_HP = 1
+    DEAD = 2
+    FLED = 3
+
+
+class Faction(Enum):
+    """Which side is a Combatant on?"""
+
+    PCS = 1
+    ENEMIES = 2

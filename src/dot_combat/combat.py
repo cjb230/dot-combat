@@ -3,6 +3,7 @@ from typing import List
 from typing import Union
 
 from . import combatant as c
+from . import helpers as h
 
 
 class Combat:
@@ -68,6 +69,35 @@ class Combat:
             return False
         return True
 
+    def remove_combatant(self, combatant_to_remove: c.Combatant) -> None:
+        """Remove Combatant from this combat.
+
+        Combatant removed from combatant_list, and from initiative_order if it
+        is populated. Combat finished automatically if combat_over() is True.
+        """
+        try:
+            self.combatant_list.remove(combatant_to_remove)
+        except ValueError as ve:
+            raise ValueError(
+                f"Combatant {str(combatant_to_remove)} not found in combatant list."
+            ) from ve
+        if self.initiative_order:
+            combatant_initiative: int
+            for initiative, combatants in self.initiative_order.items():
+                if combatant_to_remove in combatants:
+                    combatants.remove(combatant_to_remove)
+                    combatant_initiative = initiative
+                    break
+            else:  # I finally used it.
+                raise ValueError(
+                    f"Combatant {str(combatant_to_remove)} not found in "
+                    "initiative order."
+                )
+            if len(self.initiative_order[combatant_initiative]) == 0:
+                del self.initiative_order[combatant_initiative]
+        if self.combat_over():
+            self.end_combat()
+
     def start_combat(self) -> None:
         """Start the round counter, set the current initiative and current combatant."""
         self.current_round = 1
@@ -102,21 +132,42 @@ class Combat:
         return self.current_combatant
 
     def next_initiative(self) -> int:
-        """Returns the next initiative value."""
+        """Returns the next initiative value.
+
+        Goes to the next used initiative, or back to the highest if currently
+        at the lowest used initiative.
+        """
         for this_initiative in self.used_initiatives:
             if this_initiative < self.current_initiative:
                 return this_initiative
         return max(self.used_initiatives)
 
     def advance_initiative(self) -> None:
-        """Advance the initiative.
-
-        Goes to the next used initiative, or back to the highest if currently
-        at the lowest used initiative.
-        """
+        """Advance the initiative."""
         self.current_initiative = self.next_initiative()
 
     def advance_round(self) -> int:
         """Increment the round number and return it."""
         self.current_round += 1
         return self.current_round
+
+    def combat_over(self) -> bool:
+        """Should the combat be finished?"""
+        if not self.has_started:
+            return False
+
+        # are multiple factions present?
+        enemies_present: bool = False
+        pcs_present: bool = False
+        for combatant in self.combatant_list:
+            if combatant.faction == h.Faction.ENEMIES:
+                enemies_present = True
+            else:
+                pcs_present = True
+            if enemies_present and pcs_present:
+                return False
+        return True
+
+    def end_combat(self) -> None:
+        """End the combat."""
+        self.has_finished = True

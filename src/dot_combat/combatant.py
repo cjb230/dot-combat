@@ -13,6 +13,9 @@ class Combatant:
         max_hit_points: int,
         current_hit_points: Optional[int] = None,
         control: str = "DM",
+        faction: h.Faction = h.Faction.ENEMIES,
+        fighting_status: h.FightingStatus = h.FightingStatus.FIGHTING,
+        removal_condition: h.RemovalConditions = h.RemovalConditions.ZERO_HP,
     ):
         """New instance of a Combatant."""
         self.control: str = control
@@ -21,6 +24,9 @@ class Combatant:
             current_hit_points if current_hit_points else max_hit_points
         )
         self.conscious = self.current_hit_points > 0
+        self.faction = faction
+        self.fighting_status = fighting_status
+        self.removal_condition = removal_condition
 
     def take_damage(self, hp_damage: int, damage_type: h.DamageType) -> None:
         """Damage the combatant. Current_hit_points cannot fall below zero."""
@@ -43,3 +49,12 @@ class Combatant:
         result += dex_modifier
         self.initiative = result
         return result
+
+    def removal_conditions_met(self) -> bool:
+        """Should this Combatant be removed from combat?"""
+        if self.fighting_status == h.FightingStatus.FLED:
+            return True
+        if self.removal_condition == h.RemovalConditions.ZERO_HP:
+            if self.current_hit_points <= 0:
+                return True
+        return False
