@@ -1,6 +1,5 @@
 """Contains the Combat class."""
 from typing import List
-from typing import Tuple
 from typing import Union
 
 from . import combatant as c
@@ -78,10 +77,10 @@ class Combat:
         """
         try:
             self.combatant_list.remove(combatant_to_remove)
-        except ValueError:
+        except ValueError as ve:
             raise ValueError(
                 f"Combatant {str(combatant_to_remove)} not found in combatant list."
-            )
+            ) from ve
         if self.initiative_order:
             combatant_initiative: int
             for initiative, combatants in self.initiative_order.items():
@@ -91,7 +90,8 @@ class Combat:
                     break
             else:  # I finally used it.
                 raise ValueError(
-                    f"Combatant {str(combatant_to_remove)} not found in initiative order."
+                    f"Combatant {str(combatant_to_remove)} not found in "
+                    "initiative order."
                 )
             if len(self.initiative_order[combatant_initiative]) == 0:
                 del self.initiative_order[combatant_initiative]
