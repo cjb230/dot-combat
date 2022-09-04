@@ -1,6 +1,9 @@
 """Test cases for the Combat class."""
+import copy
+
 import pytest
 
+import dot_combat.helpers as h
 from dot_combat.combat import Combat
 from dot_combat.combatant import Combatant
 
@@ -37,10 +40,10 @@ def test_add_combatant(mocker, test_combat):
     """
     mocker.patch("dot_combat.roll.single_die_roll", return_value=1)
     additional_combatant_1 = Combatant(
-        max_hit_points=3, current_hit_points=1, control="DM"
+        max_hit_points=3, current_hit_points=1, control="DM", faction=h.Faction.ENEMIES
     )
     additional_combatant_2 = Combatant(
-        max_hit_points=4, current_hit_points=1, control="DM"
+        max_hit_points=4, current_hit_points=1, control="DM", faction=h.Faction.PCS
     )
     assert len(test_combat.combatant_list) == 2
     test_combat.add_combatant(new_combatant=additional_combatant_1)
@@ -100,7 +103,7 @@ def test_start_combat(mocker, test_combat):
     assert test_combat.has_started is True
 
 
-def test_next_combatant(test_combat, test_combatant):
+def test_next_combatant(test_combat):
     """Correctly determines which Combatant is next."""
     test_combatant_3 = Combatant(max_hit_points=3, current_hit_points=1, control="DM")
     test_combatant_4 = Combatant(max_hit_points=4, current_hit_points=1, control="DM")
@@ -184,3 +187,79 @@ def test_advance_round(test_combat):
     test_combat.current_round = 5
     test_combat.advance_round()
     assert test_combat.current_round == 6
+
+
+def test_remove_combatant(test_combat):
+    """Can we remove a Combatant cleanly from the combat?"""
+    test_combat2 = copy.deepcopy(test_combat)
+    test_combat3 = copy.deepcopy(test_combat)
+    test_combat4 = copy.deepcopy(test_combat)
+    test_combat5 = copy.deepcopy(test_combat)
+    # list size check now ensures list size check later is meaningful
+    assert len(test_combat.combatant_list) == 2
+    test_combat.fill_initiative_list()
+    assert test_combat.can_start_combat() is True
+    test_combat.start_combat()
+    assert test_combat.has_started is True
+    assert test_combat.has_finished is False
+    test_combat.remove_combatant(combatant_to_remove=test_combat.combatant_list[0])
+    assert len(test_combat.combatant_list) == 1
+    assert test_combat.has_finished is True
+    # case where the initiative list is empty
+    assert len(test_combat2.combatant_list) == 2
+    test_combat2.remove_combatant(combatant_to_remove=test_combat2.combatant_list[0])
+    assert len(test_combat2.combatant_list) == 1
+    # unused initiative keys are deleted
+    test_combatant_3 = Combatant(
+        max_hit_points=3, current_hit_points=1, control="DM", faction=h.Faction.PCS
+    )
+    test_combat3.combatant_list[1].faction = h.Faction.ENEMIES
+    test_combat3.initiative_order = {
+        17: [test_combat3.combatant_list[0]],
+        13: [test_combat3.combatant_list[1], test_combatant_3],
+    }
+    assert len(test_combat3.initiative_order) == 2
+    test_combat3.remove_combatant(combatant_to_remove=test_combat3.combatant_list[0])
+    assert len(test_combat3.initiative_order) == 1
+    # cover _not_ deleting the initiative key
+    test_combatant_3 = Combatant(
+        max_hit_points=3, current_hit_points=1, control="DM", faction=h.Faction.PCS
+    )
+    test_combat4.combatant_list[0].faction = h.Faction.ENEMIES  # defaults may change!
+    test_combat4.combatant_list[1].faction = h.Faction.ENEMIES
+    test_combat4.initiative_order = {
+        17: [test_combat4.combatant_list[0]],
+        13: [test_combat4.combatant_list[1], test_combatant_3],
+    }
+    assert len(test_combat4.initiative_order) == 2
+    test_combat4.remove_combatant(combatant_to_remove=test_combat4.combatant_list[1])
+    assert len(test_combat4.initiative_order) == 2
+    # exception on not finding the Combatant
+    test_combatant_3 = Combatant(
+        max_hit_points=3, current_hit_points=1, control="DM", faction=h.Faction.PCS
+    )
+    test_combat5.add_combatant(new_combatant=test_combatant_3)
+    test_combat5.combatant_list[0].faction = h.Faction.ENEMIES  # defaults may change!
+    test_combat5.combatant_list[1].faction = h.Faction.PCS
+    test_combat5.remove_combatant(combatant_to_remove=test_combatant_3)
+    with pytest.raises(ValueError):
+        test_combat5.remove_combatant(combatant_to_remove=test_combatant_3)
+    test_combat5.combatant_list.append(test_combatant_3)
+    test_combat5.initiative_order = {
+        17: [test_combat5.combatant_list[0]],
+        13: [test_combat5.combatant_list[1]],
+    }
+    with pytest.raises(ValueError):
+        test_combat5.remove_combatant(combatant_to_remove=test_combatant_3)
+
+
+def test_combat_over(test_combat):
+    """Is Combat accurately reported as over?"""
+    test_combat.combatant_list[0].faction = h.Faction.PCS
+    test_combat.fill_initiative_list()
+    assert test_combat.can_start_combat() is True
+    test_combat.start_combat()
+    assert test_combat.has_started is True
+    assert test_combat.combat_over() is False
+    test_combat.remove_combatant(combatant_to_remove=test_combat.combatant_list[1])
+    assert test_combat.combat_over() is True

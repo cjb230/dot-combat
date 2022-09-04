@@ -1,6 +1,8 @@
 """Test cases for the Combatant class."""
 from dot_combat.combatant import Combatant
 from dot_combat.helpers import DamageType
+from dot_combat.helpers import FightingStatus
+from dot_combat.helpers import RemovalConditions
 
 
 def test_combatant_creation_hit_points() -> None:
@@ -40,3 +42,19 @@ def test_healing_is_recorded() -> None:
     assert this_combatant.current_hit_points == 8
     this_combatant.heal(hp_heal=3)
     assert this_combatant.current_hit_points == 10
+
+
+def test_removal_conditions_met() -> None:
+    """Are removal conditions reported accurately?"""
+    this_combatant = Combatant(
+        max_hit_points=10, fighting_status=FightingStatus.FIGHTING
+    )
+    assert this_combatant.removal_conditions_met() is False
+    this_combatant.fighting_status = FightingStatus.FLED
+    assert this_combatant.removal_conditions_met() is True
+    this_combatant.fighting_status = FightingStatus.FIGHTING
+    this_combatant.current_hit_points = 0
+    this_combatant.removal_condition = RemovalConditions.ZERO_HP
+    assert this_combatant.removal_conditions_met() is True
+    this_combatant.removal_condition = RemovalConditions.DEAD
+    assert this_combatant.removal_conditions_met() is False
