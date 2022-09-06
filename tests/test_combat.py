@@ -31,6 +31,7 @@ def test_fill_initiative_list(mocker, test_combat):
     assert len(test_combat.initiative_order) == 1
     assert len(test_combat.initiative_order[1]) == 2
     assert test_combat.used_initiatives == [1]
+    assert "Filled initiative order." in test_combat.technical_log
 
 
 def test_add_combatant(mocker, test_combat):
@@ -59,6 +60,7 @@ def test_add_combatant(mocker, test_combat):
         max_hit_points=5, current_hit_points=1, control="DM"
     )
     test_combat.add_combatant(new_combatant=additional_combatant_3)
+    assert "joined the combat" in test_combat.narrative_log
 
 
 def test_add_combatants(test_combat):
@@ -72,6 +74,7 @@ def test_add_combatants(test_combat):
     new_combatant_list = [additional_combatant_1, additional_combatant_2]
     test_combat.add_combatants(new_combatants=new_combatant_list)
     assert len(test_combat.combatant_list) == 4
+    assert "Adding 2 new combatants." in test_combat.technical_log
 
 
 def test_can_start_combat(test_combat):
@@ -84,6 +87,7 @@ def test_can_start_combat(test_combat):
     assert test_combat.can_start_combat() is False
     test_combat.current_round = 0
     assert test_combat.can_start_combat() is True
+    assert "Can start combat." in test_combat.technical_log
 
 
 def test_start_combat(mocker, test_combat):
@@ -101,6 +105,7 @@ def test_start_combat(mocker, test_combat):
     assert test_combat.current_initiative == 20
     assert test_combat.current_combatant == test_combat.combatant_list[0]
     assert test_combat.has_started is True
+    assert "Starting combat." in test_combat.technical_log
 
 
 def test_next_combatant(test_combat):
@@ -152,6 +157,7 @@ def test_advance_combatant(mocker, test_combat):
     test_combat.advance_combatant()
     assert test_combat.current_combatant == test_combat.combatant_list[1]
     assert test_combat.next_combatant() == test_combat.combatant_list[0]
+    assert "Moving to Combatant " in test_combat.technical_log
 
 
 def test_next_initiative(test_combat):
@@ -176,6 +182,7 @@ def test_advance_initiative(test_combat):
     test_combat.current_initiative = 15
     test_combat.advance_initiative()
     assert test_combat.current_initiative == 10
+    assert "Moving to initiative 10." in test_combat.technical_log
     test_combat.advance_initiative()
     assert test_combat.current_initiative == 5
     test_combat.advance_initiative()
@@ -187,6 +194,7 @@ def test_advance_round(test_combat):
     test_combat.current_round = 5
     test_combat.advance_round()
     assert test_combat.current_round == 6
+    assert "Starting round 6." in test_combat.technical_log
 
 
 def test_remove_combatant(test_combat):
@@ -204,6 +212,7 @@ def test_remove_combatant(test_combat):
     assert test_combat.has_finished is False
     test_combat.remove_combatant(combatant_to_remove=test_combat.combatant_list[0])
     assert len(test_combat.combatant_list) == 1
+    assert "Removing Combatant " in test_combat.narrative_log
     assert test_combat.has_finished is True
     # case where the initiative list is empty
     assert len(test_combat2.combatant_list) == 2
@@ -261,5 +270,11 @@ def test_combat_over(test_combat):
     test_combat.start_combat()
     assert test_combat.has_started is True
     assert test_combat.combat_over() is False
+    assert (
+        "Combat cannot end because multiple factions are still present."
+        in test_combat.technical_log
+    )
+    assert "Combat can end." not in test_combat.technical_log
     test_combat.remove_combatant(combatant_to_remove=test_combat.combatant_list[1])
     assert test_combat.combat_over() is True
+    assert "Combat can end." in test_combat.technical_log

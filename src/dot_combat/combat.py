@@ -19,9 +19,28 @@ class Combat:
         self.combatant_list: List[c.Combatant] = combatant_list
         self.current_combatant: Union[c.Combatant, None] = None
         self.used_initiatives: List[int] = []
+        self.narrative_log: str = ""
+        self.technical_log: str = ""
+
+    def narrative_log_comment(self, comment: str) -> None:
+        """Append line to narrative log."""
+        log_line = (
+            f"R: {str(self.current_round)}  "
+            f"I:{str(self.current_initiative)} {comment}\n"
+        )
+        self.narrative_log += log_line
+
+    def technical_log_comment(self, comment: str) -> None:
+        """Append line to technical log."""
+        log_line = (
+            f"R: {str(self.current_round)}  "
+            f"I:{str(self.current_initiative)} {comment}\n"
+        )
+        self.technical_log += log_line
 
     def populate_used_initiatives(self) -> None:
         """Recreate the used_initiatives list."""
+        self.technical_log_comment("Repopulated used initiative list.")
         self.used_initiatives = sorted(self.initiative_order.keys(), reverse=True)
 
     def fill_initiative_list(self) -> None:
@@ -29,6 +48,7 @@ class Combat:
 
         Each combatant in combatant_list generates its own initiative
         """
+        self.technical_log_comment("Filled initiative order.")
         for combatant in self.combatant_list:
             initiative = combatant.roll_initiative(dex_modifier=0)
             if initiative in self.initiative_order:
@@ -42,6 +62,9 @@ class Combat:
 
         Also adds combatant to initiative_order if that is populated.
         """
+        self.narrative_log_comment(
+            comment=f"Combatant {str(new_combatant)} joined the combat."
+        )
         self.combatant_list.append(new_combatant)
         if self.initiative_order:
             new_initiative = new_combatant.roll_initiative()
@@ -53,20 +76,28 @@ class Combat:
 
     def add_combatants(self, new_combatants: List[c.Combatant]) -> None:
         """Iteratively adds members of supplied list of combatants."""
+        self.technical_log_comment(f"Adding {len(new_combatants)} new combatants.")
         for new_combatant in new_combatants:
             self.add_combatant(new_combatant=new_combatant)
 
     def can_start_combat(self) -> bool:
         """True when all prerequisites are complete to begin combat."""
         if not self.combatant_list:
-            print("empty combatant list")
+            self.technical_log_comment(
+                "Cannot start combat as there are no combatants."
+            )
             return False
         if not self.initiative_order:
-            print("initiative order not populated")
+            self.technical_log_comment(
+                "Cannot start combat as the initiative order is not populated."
+            )
             return False
         if self.current_round != 0:
-            print("current round must be zero before starting")
+            self.technical_log_comment(
+                f"Cannot start combat as current round = {str(self.current_round)}."
+            )
             return False
+        self.technical_log_comment("Can start combat.")
         return True
 
     def remove_combatant(self, combatant_to_remove: c.Combatant) -> None:
@@ -75,6 +106,9 @@ class Combat:
         Combatant removed from combatant_list, and from initiative_order if it
         is populated. Combat finished automatically if combat_over() is True.
         """
+        self.narrative_log_comment(
+            comment=f"Removing Combatant {str(combatant_to_remove)}."
+        )
         try:
             self.combatant_list.remove(combatant_to_remove)
         except ValueError as ve:
@@ -100,6 +134,7 @@ class Combat:
 
     def start_combat(self) -> None:
         """Start the round counter, set the current initiative and current combatant."""
+        self.technical_log_comment("Starting combat.")
         self.current_round = 1
         self.current_initiative = self.used_initiatives[0]
         self.current_combatant = self.initiative_order[self.current_initiative][0]
@@ -107,6 +142,7 @@ class Combat:
 
     def next_combatant(self) -> c.Combatant:
         """Return the combatant that will be next."""
+        self.technical_log_comment("Getting next combatant.")
         num_equal_initiative_combatants = len(
             self.initiative_order[self.current_initiative]
         )
@@ -128,6 +164,7 @@ class Combat:
 
     def advance_combatant(self) -> c.Combatant:
         """Advance the combatant by one and return them."""
+        self.technical_log_comment(f"Moving to Combatant {str(self.next_combatant())}.")
         self.current_combatant = self.next_combatant()
         return self.current_combatant
 
@@ -144,16 +181,21 @@ class Combat:
 
     def advance_initiative(self) -> None:
         """Advance the initiative."""
+        self.technical_log_comment(
+            f"Moving to initiative {str(self.next_initiative())}."
+        )
         self.current_initiative = self.next_initiative()
 
     def advance_round(self) -> int:
         """Increment the round number and return it."""
+        self.technical_log_comment(f"Starting round {str(self.current_round+1)}.")
         self.current_round += 1
         return self.current_round
 
     def combat_over(self) -> bool:
         """Should the combat be finished?"""
         if not self.has_started:
+            self.technical_log_comment("Combat cannot end because it has not started.")
             return False
 
         # are multiple factions present?
@@ -165,9 +207,18 @@ class Combat:
             else:
                 pcs_present = True
             if enemies_present and pcs_present:
+                self.technical_log_comment(
+                    "Combat cannot end because multiple factions are still present."
+                )
                 return False
+        self.technical_log_comment("Combat can end.")
         return True
 
     def end_combat(self) -> None:
         """End the combat."""
+        self.technical_log_comment("Ending the combat.")
         self.has_finished = True
+        print()
+        print(self.narrative_log)
+        print()
+        print(self.technical_log)
