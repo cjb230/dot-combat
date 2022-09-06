@@ -23,6 +23,18 @@ def test_combat(test_combatant):
     return test_combat
 
 
+def test_narrative_log_comment(test_combat) -> None:
+    """Lines added to narrative log."""
+    test_combat.narrative_log_comment(comment="XYZA")
+    assert "XYZA" in test_combat.narrative_log
+
+
+def test_technical_log_comment(test_combat) -> None:
+    """Lines added to narrative log."""
+    test_combat.technical_log_comment(comment="XYZA")
+    assert "XYZA" in test_combat.technical_log
+
+
 def test_fill_initiative_list(mocker, test_combat):
     """All combatants are added to the initiative order."""
     mocker.patch("dot_combat.roll.single_die_roll", return_value=1)
