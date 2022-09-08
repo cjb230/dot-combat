@@ -290,3 +290,26 @@ def test_combat_over(test_combat):
     test_combat.remove_combatant(combatant_to_remove=test_combat.combatant_list[1])
     assert test_combat.combat_over() is True
     assert "Combat can end." in test_combat.technical_log
+
+
+def test_damage_combatant(test_combat):
+    """Do combatants lose HP correctly and get removed from the combat at 0HP?"""
+    test_combat.combatant_list[0].faction = h.Faction.PCS
+    test_combat.combatant_list[
+        1
+    ].current_hit_points = 2  # just in case this has changed
+    test_combat.damage_combatant(
+        combatant_to_damage=test_combat.combatant_list[1],
+        gross_damage=1,
+        damage_type=h.DamageType.PIERCING,
+    )
+    assert len(test_combat.combatant_list) == 2
+    assert test_combat.combatant_list[1].current_hit_points == 1
+    assert "takes 1 HP of" in test_combat.technical_log
+    test_combat.damage_combatant(
+        combatant_to_damage=test_combat.combatant_list[1],
+        gross_damage=1,
+        damage_type=h.DamageType.PIERCING,
+    )
+    assert len(test_combat.combatant_list) == 1
+    assert "has 0HP or fewer, and is removed" in test_combat.technical_log

@@ -222,3 +222,21 @@ class Combat:
         print(self.narrative_log)
         print()
         print(self.technical_log)
+
+    def damage_combatant(
+        self,
+        combatant_to_damage: c.Combatant,
+        gross_damage: int,
+        damage_type: h.DamageType,
+    ) -> None:
+        """Apply a given number of HP of damage, of a given type, to a Combatant."""
+        self.technical_log_comment(
+            f"{combatant_to_damage} takes {str(gross_damage)} "
+            f"HP of {damage_type} damage."
+        )
+        combatant_to_damage.take_damage(hp_damage=gross_damage, damage_type=damage_type)
+        if combatant_to_damage.current_hit_points < 1:
+            self.technical_log_comment(
+                f"{combatant_to_damage} has 0HP or fewer, and is removed."
+            )
+            self.remove_combatant(combatant_to_remove=combatant_to_damage)
