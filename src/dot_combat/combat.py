@@ -231,7 +231,8 @@ class Combat:
     ) -> None:
         """Apply a given number of HP of damage, of a given type, to a Combatant."""
         self.technical_log_comment(
-            f"{combatant_to_damage} takes {str(gross_damage)} HP of {damage_type} damage."
+            f"{combatant_to_damage} takes {str(gross_damage)} "
+            f"HP of {damage_type} damage."
         )
         combatant_to_damage.take_damage(hp_damage=gross_damage, damage_type=damage_type)
         if combatant_to_damage.current_hit_points < 1:
