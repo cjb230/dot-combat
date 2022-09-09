@@ -129,8 +129,11 @@ def test_next_combatant(test_combat):
         13: [test_combat.combatant_list[1], test_combatant_3],
         10: [test_combatant_4],
     }
-
     test_combat.populate_used_initiatives()
+    with pytest.raises(ValueError):
+        _ = test_combat.next_combatant()
+    test_combat.start_combat()
+
     test_combat.current_initiative = 10
     assert test_combat.next_combatant() == test_combat.combatant_list[0]
     test_combat.current_initiative = 13
@@ -170,6 +173,8 @@ def test_advance_combatant(mocker, test_combat):
     assert test_combat.current_combatant == test_combat.combatant_list[1]
     assert test_combat.next_combatant() == test_combat.combatant_list[0]
     assert "Moving to Combatant " in test_combat.technical_log
+    assert "'s turn is over." in test_combat.narrative_log
+    assert "'s turn is starting." in test_combat.narrative_log
 
 
 def test_next_initiative(test_combat):

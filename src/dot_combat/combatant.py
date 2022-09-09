@@ -27,6 +27,10 @@ class Combatant:
         self.faction = faction
         self.fighting_status = fighting_status
         self.removal_condition = removal_condition
+        self.movement_available = False
+        self.action_available = False
+        self.action_available = False
+        self.reaction_available = True
 
     def take_damage(self, hp_damage: int, damage_type: h.DamageType) -> None:
         """Damage the combatant. Current_hit_points cannot fall below zero."""
@@ -58,3 +62,16 @@ class Combatant:
             if self.current_hit_points <= 0:
                 return True
         return False
+
+    def start_turn(self) -> None:
+        """Enables flags for available movement, action, bonus action and reaction."""
+        self.movement_available = True
+        self.action_available = True
+        self.action_available = True
+        self.reaction_available = True
+
+    def end_turn(self) -> None:
+        """Disables flags for available movement, action, and bonus action."""
+        self.movement_available = False
+        self.action_available = False
+        self.action_available = False

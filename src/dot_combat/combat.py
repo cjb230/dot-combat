@@ -1,6 +1,5 @@
 """Contains the Combat class."""
 from typing import List
-from typing import Union
 
 from . import combatant as c
 from . import helpers as h
@@ -17,7 +16,7 @@ class Combat:
         self.current_initiative: int = 0
         self.initiative_order: dict = {}
         self.combatant_list: List[c.Combatant] = combatant_list
-        self.current_combatant: Union[c.Combatant, None] = None
+        self.current_combatant: c.Combatant
         self.used_initiatives: List[int] = []
         self.narrative_log: str = ""
         self.technical_log: str = ""
@@ -143,6 +142,13 @@ class Combat:
     def next_combatant(self) -> c.Combatant:
         """Return the combatant that will be next."""
         self.technical_log_comment("Getting next combatant.")
+        if not self.has_started or self.has_finished:
+            self.technical_log_comment(
+                "Trying to determine next_combatant when combat is not in progress"
+            )
+            raise ValueError(
+                "Cannot get next_combatant when combat is not in progress."
+            )
         num_equal_initiative_combatants = len(
             self.initiative_order[self.current_initiative]
         )
@@ -165,7 +171,15 @@ class Combat:
     def advance_combatant(self) -> c.Combatant:
         """Advance the combatant by one and return them."""
         self.technical_log_comment(f"Moving to Combatant {str(self.next_combatant())}.")
+        self.current_combatant.end_turn()
+        self.narrative_log_comment(
+            f"Combatant {str(self.next_combatant())}'s turn is over."
+        )
         self.current_combatant = self.next_combatant()
+        self.current_combatant.start_turn()
+        self.narrative_log_comment(
+            f"Combatant {str(self.next_combatant())}'s turn is starting."
+        )
         return self.current_combatant
 
     def next_initiative(self) -> int:
