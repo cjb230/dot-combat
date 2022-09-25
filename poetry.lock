@@ -811,7 +811,7 @@ python-versions = ">=3.5"
 
 [package.dependencies]
 Click = ">=6.0"
-dparse = ">=0.5.2"
+dparse = ">=0.5.1"
 packaging = "*"
 requests = "*"
 setuptools = "*"
