@@ -4,20 +4,48 @@ import copy
 import pytest
 
 import dot_combat.helpers as h
+from dot_combat.attack import Attack
 from dot_combat.combat import Combat
 from dot_combat.combatant import Combatant
 
 
 @pytest.fixture
-def test_combatant():
-    """A Combatant with one hit point."""
-    return Combatant(max_hit_points=1, current_hit_points=1, control="DM")
+def test_attack_list():
+    """Fixture for a one-item Attack list."""
+    shortsword: Attack = Attack(
+        name="Shortsword",
+        attack_bonus=0,
+        damage_dice="d6",
+        damage_type=h.DamageType.PIERCING,
+        damage_bonus=0,
+        range=5,
+        long_range=None,
+    )
+    return [shortsword]
 
 
 @pytest.fixture
-def test_combat(test_combatant):
+def test_combatant(test_attack_list):
+    """A Combatant with one hit point."""
+    return Combatant(
+        max_hit_points=1,
+        current_hit_points=1,
+        control="DM",
+        armor_class=15,
+        attacks=test_attack_list,
+    )
+
+
+@pytest.fixture
+def test_combat(test_combatant, test_attack_list):
     """A Combat with two combatants. Initiative list not yet filled."""
-    combatant_2 = Combatant(max_hit_points=2, current_hit_points=2, control="DM")
+    combatant_2 = Combatant(
+        max_hit_points=2,
+        current_hit_points=2,
+        control="DM",
+        armor_class=15,
+        attacks=test_attack_list,
+    )
     combatant_list = [test_combatant, combatant_2]
     test_combat = Combat(combatant_list=combatant_list)
     return test_combat
@@ -46,17 +74,27 @@ def test_fill_initiative_list(mocker, test_combat):
     assert "Filled initiative order." in test_combat.technical_log
 
 
-def test_add_combatant(mocker, test_combat):
+def test_add_combatant(mocker, test_combat, test_attack_list):
     """New combatants are added to the combatant list.
 
     Also added to the initiative order if that has been populated.
     """
     mocker.patch("dot_combat.roll.single_die_roll", return_value=1)
     additional_combatant_1 = Combatant(
-        max_hit_points=3, current_hit_points=1, control="DM", faction=h.Faction.ENEMIES
+        max_hit_points=3,
+        current_hit_points=1,
+        control="DM",
+        faction=h.Faction.ENEMIES,
+        armor_class=15,
+        attacks=test_attack_list,
     )
     additional_combatant_2 = Combatant(
-        max_hit_points=4, current_hit_points=1, control="DM", faction=h.Faction.PCS
+        max_hit_points=4,
+        current_hit_points=1,
+        control="DM",
+        faction=h.Faction.PCS,
+        armor_class=15,
+        attacks=test_attack_list,
     )
     assert len(test_combat.combatant_list) == 2
     test_combat.add_combatant(new_combatant=additional_combatant_1)
@@ -69,19 +107,31 @@ def test_add_combatant(mocker, test_combat):
     assert len(test_combat.initiative_order[1]) == 4
     mocker.patch("dot_combat.roll.single_die_roll", return_value=2)
     additional_combatant_3 = Combatant(
-        max_hit_points=5, current_hit_points=1, control="DM"
+        max_hit_points=5,
+        current_hit_points=1,
+        control="DM",
+        armor_class=15,
+        attacks=test_attack_list,
     )
     test_combat.add_combatant(new_combatant=additional_combatant_3)
     assert "joined the combat" in test_combat.narrative_log
 
 
-def test_add_combatants(test_combat):
+def test_add_combatants(test_combat, test_attack_list):
     """Lists of Combatants can be added to the Combat."""
     additional_combatant_1 = Combatant(
-        max_hit_points=3, current_hit_points=1, control="DM"
+        max_hit_points=3,
+        current_hit_points=1,
+        control="DM",
+        armor_class=15,
+        attacks=test_attack_list,
     )
     additional_combatant_2 = Combatant(
-        max_hit_points=4, current_hit_points=1, control="DM"
+        max_hit_points=4,
+        current_hit_points=1,
+        control="DM",
+        armor_class=15,
+        attacks=test_attack_list,
     )
     new_combatant_list = [additional_combatant_1, additional_combatant_2]
     test_combat.add_combatants(new_combatants=new_combatant_list)
@@ -120,10 +170,22 @@ def test_start_combat(mocker, test_combat):
     assert "Starting combat." in test_combat.technical_log
 
 
-def test_next_combatant(test_combat):
+def test_next_combatant(test_combat, test_attack_list):
     """Correctly determines which Combatant is next."""
-    test_combatant_3 = Combatant(max_hit_points=3, current_hit_points=1, control="DM")
-    test_combatant_4 = Combatant(max_hit_points=4, current_hit_points=1, control="DM")
+    test_combatant_3 = Combatant(
+        max_hit_points=3,
+        current_hit_points=1,
+        control="DM",
+        armor_class=15,
+        attacks=test_attack_list,
+    )
+    test_combatant_4 = Combatant(
+        max_hit_points=4,
+        current_hit_points=1,
+        control="DM",
+        armor_class=15,
+        attacks=test_attack_list,
+    )
     test_combat.initiative_order = {
         17: [test_combat.combatant_list[0]],
         13: [test_combat.combatant_list[1], test_combatant_3],
@@ -214,7 +276,7 @@ def test_advance_round(test_combat):
     assert "Starting round 6." in test_combat.technical_log
 
 
-def test_remove_combatant(test_combat):
+def test_remove_combatant(test_combat, test_attack_list):
     """Can we remove a Combatant cleanly from the combat?"""
     test_combat2 = copy.deepcopy(test_combat)
     test_combat3 = copy.deepcopy(test_combat)
@@ -237,7 +299,12 @@ def test_remove_combatant(test_combat):
     assert len(test_combat2.combatant_list) == 1
     # unused initiative keys are deleted
     test_combatant_3 = Combatant(
-        max_hit_points=3, current_hit_points=1, control="DM", faction=h.Faction.PCS
+        max_hit_points=3,
+        current_hit_points=1,
+        control="DM",
+        faction=h.Faction.PCS,
+        armor_class=15,
+        attacks=test_attack_list,
     )
     test_combat3.combatant_list[1].faction = h.Faction.ENEMIES
     test_combat3.initiative_order = {
@@ -249,7 +316,12 @@ def test_remove_combatant(test_combat):
     assert len(test_combat3.initiative_order) == 1
     # cover _not_ deleting the initiative key
     test_combatant_3 = Combatant(
-        max_hit_points=3, current_hit_points=1, control="DM", faction=h.Faction.PCS
+        max_hit_points=3,
+        current_hit_points=1,
+        control="DM",
+        faction=h.Faction.PCS,
+        armor_class=15,
+        attacks=test_attack_list,
     )
     test_combat4.combatant_list[0].faction = h.Faction.ENEMIES  # defaults may change!
     test_combat4.combatant_list[1].faction = h.Faction.ENEMIES
@@ -262,7 +334,12 @@ def test_remove_combatant(test_combat):
     assert len(test_combat4.initiative_order) == 2
     # exception on not finding the Combatant
     test_combatant_3 = Combatant(
-        max_hit_points=3, current_hit_points=1, control="DM", faction=h.Faction.PCS
+        max_hit_points=3,
+        current_hit_points=1,
+        control="DM",
+        faction=h.Faction.PCS,
+        armor_class=15,
+        attacks=test_attack_list,
     )
     test_combat5.add_combatant(new_combatant=test_combatant_3)
     test_combat5.combatant_list[0].faction = h.Faction.ENEMIES  # defaults may change!
@@ -318,3 +395,95 @@ def test_damage_combatant(test_combat):
     )
     assert len(test_combat.combatant_list) == 1
     assert "has 0HP or fewer, and is removed" in test_combat.technical_log
+
+
+def test_manage_attack(mocker, test_combat):
+    """Are all cases for an attack managed correctly?"""
+    test_combat_2 = copy.deepcopy(test_combat)
+    test_combat_3 = copy.deepcopy(test_combat)
+    test_combat_4 = copy.deepcopy(test_combat)
+    test_combat_5 = copy.deepcopy(test_combat)
+    test_combat_6 = copy.deepcopy(test_combat)
+    mocker.patch("dot_combat.roll.single_die_roll", return_value=1)
+    test_combat.manage_attack(
+        attacking_combatant=test_combat.combatant_list[0],
+        attack_used=test_combat.combatant_list[0].attacks[0],
+        target_combatant=test_combat.combatant_list[1],
+    )
+    assert "rolls a 1 and misses." in test_combat.narrative_log
+    mocker.patch("dot_combat.roll.single_die_roll", return_value=20)
+    test_combat_2.manage_attack(
+        attacking_combatant=test_combat_2.combatant_list[0],
+        attack_used=test_combat_2.combatant_list[0].attacks[0],
+        target_combatant=test_combat_2.combatant_list[1],
+    )
+    assert "rolls a 20 and makes a critical hit." in test_combat_2.narrative_log
+
+    mocker.patch("dot_combat.roll.single_die_roll", return_value=15)
+    test_combat_3.manage_attack(
+        attacking_combatant=test_combat_3.combatant_list[0],
+        attack_used=test_combat_3.combatant_list[0].attacks[0],
+        target_combatant=test_combat_3.combatant_list[1],
+    )
+    assert "rolls a 15, hitting with a score of 15" in test_combat_3.narrative_log
+
+    mocker.patch("dot_combat.roll.single_die_roll", return_value=13)
+    test_combat_4.combatant_list[0].attacks[0].attack_bonus = 2
+    test_combat_4.manage_attack(
+        attacking_combatant=test_combat_4.combatant_list[0],
+        attack_used=test_combat_4.combatant_list[0].attacks[0],
+        target_combatant=test_combat_4.combatant_list[1],
+    )
+    assert "rolls a 13, hitting with a score of 15" in test_combat_4.narrative_log
+
+    test_combat_5.combatant_list[0].attacks[0].attack_bonus = 1
+    test_combat_5.manage_attack(
+        attacking_combatant=test_combat_5.combatant_list[0],
+        attack_used=test_combat_5.combatant_list[0].attacks[0],
+        target_combatant=test_combat_5.combatant_list[1],
+    )
+    assert "rolls a 13, missing with a score of 14" in test_combat_5.narrative_log
+
+    mocker.patch.object(Combatant, "roll_attack", return_value=[22, 19, True])
+    test_combat_6.manage_attack(
+        attacking_combatant=test_combat_6.combatant_list[0],
+        attack_used=test_combat_6.combatant_list[0].attacks[0],
+        target_combatant=test_combat_6.combatant_list[1],
+    )
+    assert "makes a critical hit with a roll of 19" in test_combat_6.narrative_log
+
+
+def test_combatants_dodging(test_combat):
+    """combatants_dodging() tracks dodging combatants accurately."""
+    assert test_combat.combatants_dodging() == []
+    test_combat.combatant_list[0].start_turn()
+    test_combat.combatant_list[0].dodge()
+    assert test_combat.combatants_dodging() == [test_combat.combatant_list[0]]
+    test_combat.combatant_list[0].end_turn()
+    assert test_combat.combatants_dodging() == [test_combat.combatant_list[0]]
+    test_combat.combatant_list[0].start_turn()
+    assert test_combat.combatants_dodging() == []
+
+
+def test_combatants_disengaging(test_combat):
+    """combatants_disengaging() tracks disengaging combatants accurately."""
+    assert test_combat.combatants_disengaging() == []
+    test_combat.combatant_list[0].start_turn()
+    test_combat.combatant_list[0].disengage()
+    assert test_combat.combatants_disengaging() == [test_combat.combatant_list[0]]
+    test_combat.combatant_list[0].end_turn()
+    assert test_combat.combatants_disengaging() == [test_combat.combatant_list[0]]
+    test_combat.combatant_list[0].start_turn()
+    assert test_combat.combatants_disengaging() == []
+
+
+def test_combatants_readied(test_combat):
+    """combatants_readied() tracks readied combatants accurately."""
+    assert test_combat.combatants_readied() == []
+    test_combat.combatant_list[0].start_turn()
+    test_combat.combatant_list[0].make_ready()
+    assert test_combat.combatants_readied() == [test_combat.combatant_list[0]]
+    test_combat.combatant_list[0].end_turn()
+    assert test_combat.combatants_readied() == [test_combat.combatant_list[0]]
+    test_combat.combatant_list[0].start_turn()
+    assert test_combat.combatants_readied() == []

@@ -1,6 +1,9 @@
 """Contains the Combatant class."""
+from typing import List
 from typing import Optional
+from typing import Tuple
 
+from . import attack as a
 from . import helpers as h
 from . import roll as r
 
@@ -11,6 +14,8 @@ class Combatant:
     def __init__(
         self,
         max_hit_points: int,
+        armor_class: int,
+        attacks: List[a.Attack],
         current_hit_points: Optional[int] = None,
         control: str = "DM",
         faction: h.Faction = h.Faction.ENEMIES,
@@ -23,14 +28,19 @@ class Combatant:
         self.current_hit_points: int = (
             current_hit_points if current_hit_points else max_hit_points
         )
+        self.armor_class = armor_class
+        self.attacks = attacks
         self.conscious = self.current_hit_points > 0
         self.faction = faction
         self.fighting_status = fighting_status
         self.removal_condition = removal_condition
         self.movement_available = False
         self.action_available = False
-        self.action_available = False
+        self.bonus_action_available = False
         self.reaction_available = True
+        self.is_disengaging = False
+        self.is_dodging = False
+        self.is_readied = False
 
     def take_damage(self, hp_damage: int, damage_type: h.DamageType) -> None:
         """Damage the combatant. Current_hit_points cannot fall below zero."""
@@ -67,11 +77,88 @@ class Combatant:
         """Enables flags for available movement, action, bonus action and reaction."""
         self.movement_available = True
         self.action_available = True
-        self.action_available = True
+        self.bonus_action_available = True
         self.reaction_available = True
+        self.is_disengaging = False
+        self.is_dodging = False
+        self.is_readied = False
 
     def end_turn(self) -> None:
         """Disables flags for available movement, action, and bonus action."""
         self.movement_available = False
         self.action_available = False
-        self.action_available = False
+        self.bonus_action_available = False
+
+    def disengage(self) -> None:
+        """Take the Disengage action, if Combatant has not acted."""
+        if self.action_available:
+            self.is_disengaging = True
+            self.action_available = False
+        else:
+            raise ValueError(
+                f"Combatant {self} cannot Disengage as they have already acted."
+            )
+
+    def dodge(self) -> None:
+        """Take the Dodge action, if Combatant has not acted."""
+        if self.action_available:
+            self.is_dodging = True
+            self.action_available = False
+        else:
+            raise ValueError(
+                f"Combatant {self} cannot Dodge as they have already acted."
+            )
+
+    def make_ready(self):
+        """Ready an Action."""
+        if self.action_available:
+            self.is_readied = True
+            self.action_available = False
+        else:
+            raise ValueError(
+                f"Combatant {self} cannot Ready an Action as they have already"
+                " acted."
+            )
+
+    def take_readied_action(self):
+        """Take the Action that was readied."""
+        if self.is_readied:
+            self.is_readied = False
+        else:
+            raise ValueError(
+                f"Combatant {self} cannot take a _Readied_ Action, as they "
+                "are not readied."
+            )
+
+    def roll_attack(
+        self,
+        attack: a.Attack,
+        with_advantage: bool = False,
+        with_disadvantage: bool = False,
+    ) -> Tuple[int, int, bool]:
+        """Make an Attack roll with a given Attack."""
+        if attack not in self.attacks:
+            raise ValueError(f"{self} does not have this attack available: {attack}.")
+        if with_advantage and with_disadvantage:
+            raise ValueError("Cannot *roll* with advantage and disadvantge.")
+        raw_dice_score = r.roll(full_roll_description="d20")
+        if with_advantage or with_disadvantage:
+            second_die = r.roll(full_roll_description="d20")
+            if with_advantage:
+                raw_dice_score = max(raw_dice_score, second_die)
+            else:
+                raw_dice_score = min(raw_dice_score, second_die)
+        return (
+            raw_dice_score + attack.attack_bonus,
+            raw_dice_score,
+            (raw_dice_score == 20),
+        )
+
+    def roll_damage(
+        self, attack: a.Attack, critical_hit: bool = False
+    ) -> Tuple[int, h.DamageType]:
+        """Calculate damage and damage type from an Attack."""
+        dice_damage: int = r.roll(full_roll_description=attack.damage_dice)
+        if critical_hit:
+            dice_damage += r.roll(full_roll_description=attack.damage_dice)
+        return dice_damage + attack.damage_bonus, attack.damage_type

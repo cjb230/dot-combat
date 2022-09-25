@@ -1,6 +1,7 @@
 """Contains the Combat class."""
 from typing import List
 
+from . import attack as a
 from . import combatant as c
 from . import helpers as h
 
@@ -254,3 +255,79 @@ class Combat:
                 f"{combatant_to_damage} has 0HP or fewer, and is removed."
             )
             self.remove_combatant(combatant_to_remove=combatant_to_damage)
+
+    def manage_attack(
+        self,
+        attacking_combatant: c.Combatant,
+        attack_used: a.Attack,
+        target_combatant: c.Combatant,
+    ) -> None:
+        """Determine if the Attack hits and manage any damage done."""
+        self.narrative_log_comment(
+            comment=f"{attacking_combatant} attacks {target_combatant} with "
+            f"{attack_used}"
+        )
+        attack_score, dice_score, is_critical = attacking_combatant.roll_attack(
+            attack=attack_used
+        )
+        if dice_score == 1:
+            self.narrative_log_comment(
+                comment=f"{attacking_combatant} rolls a 1 and misses."
+            )
+            return
+        if dice_score == 20:
+            self.narrative_log_comment(
+                comment=f"{attacking_combatant} rolls a 20 and makes a critical hit."
+            )
+        elif is_critical:
+            self.narrative_log_comment(
+                comment=f"{attacking_combatant} makes a critical hit with a "
+                f"roll of {str(dice_score)}"
+            )
+        elif attack_score >= target_combatant.armor_class:
+            self.narrative_log_comment(
+                comment=f"{attacking_combatant} rolls a {str(dice_score)}, "
+                f"hitting with a score of {str(attack_score)} ."
+            )
+        else:
+            self.narrative_log_comment(
+                comment=f"{attacking_combatant} rolls a {str(dice_score)},"
+                f" missing with a score of {str(attack_score)} ."
+            )
+            return
+        raw_damage, damage_type = attacking_combatant.roll_damage(
+            attack=attack_used, critical_hit=is_critical
+        )
+        self.narrative_log_comment(
+            comment=f"{attacking_combatant} causes {str(raw_damage)} HP of "
+            f"{damage_type} damage."
+        )
+        target_combatant.take_damage(hp_damage=raw_damage, damage_type=damage_type)
+        self.narrative_log_comment(
+            comment=f"{target_combatant} now has "
+            f"{str(target_combatant.current_hit_points)} HP ."
+        )
+
+    def combatants_dodging(self) -> list:
+        """All Combatants that Dodged as their last action."""
+        return [
+            this_combatant
+            for this_combatant in self.combatant_list
+            if this_combatant.is_dodging
+        ]
+
+    def combatants_disengaging(self) -> list:
+        """All Combatants that Disengaged as their last action."""
+        return [
+            this_combatant
+            for this_combatant in self.combatant_list
+            if this_combatant.is_disengaging
+        ]
+
+    def combatants_readied(self) -> list:
+        """All Combatants that Readied an Action as their last action."""
+        return [
+            this_combatant
+            for this_combatant in self.combatant_list
+            if this_combatant.is_readied
+        ]
