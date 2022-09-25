@@ -307,3 +307,27 @@ class Combat:
             comment=f"{target_combatant} now has "
             f"{str(target_combatant.current_hit_points)} HP ."
         )
+
+    def combatants_dodging(self) -> list:
+        """All Combatants that Dodged as their last action."""
+        return [
+            this_combatant
+            for this_combatant in self.combatant_list
+            if this_combatant.is_dodging
+        ]
+
+    def combatants_disengaging(self) -> list:
+        """All Combatants that Disengaged as their last action."""
+        return [
+            this_combatant
+            for this_combatant in self.combatant_list
+            if this_combatant.is_disengaging
+        ]
+
+    def combatants_readied(self) -> list:
+        """All Combatants that Readied an Action as their last action."""
+        return [
+            this_combatant
+            for this_combatant in self.combatant_list
+            if this_combatant.is_readied
+        ]

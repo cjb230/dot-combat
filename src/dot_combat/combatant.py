@@ -36,8 +36,11 @@ class Combatant:
         self.removal_condition = removal_condition
         self.movement_available = False
         self.action_available = False
-        self.action_available = False
+        self.bonus_action_available = False
         self.reaction_available = True
+        self.is_disengaging = False
+        self.is_dodging = False
+        self.is_readied = False
 
     def take_damage(self, hp_damage: int, damage_type: h.DamageType) -> None:
         """Damage the combatant. Current_hit_points cannot fall below zero."""
@@ -74,14 +77,58 @@ class Combatant:
         """Enables flags for available movement, action, bonus action and reaction."""
         self.movement_available = True
         self.action_available = True
-        self.action_available = True
+        self.bonus_action_available = True
         self.reaction_available = True
+        self.is_disengaging = False
+        self.is_dodging = False
+        self.is_readied = False
 
     def end_turn(self) -> None:
         """Disables flags for available movement, action, and bonus action."""
         self.movement_available = False
         self.action_available = False
-        self.action_available = False
+        self.bonus_action_available = False
+
+    def disengage(self) -> None:
+        """Take the Disengage action, if Combatant has not acted."""
+        if self.action_available:
+            self.is_disengaging = True
+            self.action_available = False
+        else:
+            raise ValueError(
+                f"Combatant {self} cannot Disengage as they have already acted."
+            )
+
+    def dodge(self) -> None:
+        """Take the Dodge action, if Combatant has not acted."""
+        if self.action_available:
+            self.is_dodging = True
+            self.action_available = False
+        else:
+            raise ValueError(
+                f"Combatant {self} cannot Dodge as they have already acted."
+            )
+
+    def make_ready(self):
+        """Ready an Action."""
+        if self.action_available:
+            self.is_readied = True
+            self.action_available = False
+        else:
+            raise ValueError(
+                f"Combatant {self} cannot Ready an Action as they have already"
+                " acted."
+            )
+
+    def take_readied_action(self):
+        """Take the Action that was readied."""
+        if self.is_readied:
+            self.is_readied = False
+        else:
+            raise ValueError(
+                f"Combatant {self} cannot take a _Readied_ Action, as they "
+                "are not readied."
+            )
 
     def roll_attack(
         self,

@@ -181,3 +181,91 @@ def test_roll_damage(mocker, test_attack_list):
     )
     assert damage_amt == 6
     assert damage_type == DamageType.ACID
+
+
+def test_combatants_dodging(test_attack_list):
+    """Tests dodge() function and is_dodging attribute.
+
+    1 - is_dodging is True from the Dodge action being taken until the start
+    of the next turn.
+
+    2 - Combatant cannot dodge() if they do not have an action available.
+    """
+    this_combatant = Combatant(
+        max_hit_points=10, armor_class=15, attacks=test_attack_list
+    )
+    assert this_combatant.is_dodging is False
+    this_combatant.start_turn()
+    this_combatant.dodge()
+    assert this_combatant.is_dodging is True
+    this_combatant.end_turn()
+    assert this_combatant.is_dodging is True
+    this_combatant.start_turn()
+    assert this_combatant.is_dodging is False
+    this_combatant.action_available = False
+    with pytest.raises(ValueError):
+        this_combatant.dodge()
+
+
+def test_combatants_disengaging(test_attack_list):
+    """Tests disengage() function and is_disengaging attribute.
+
+    is_disengaging is True from the Disengage action being taken until the
+    start of the next turn.
+
+    2 - Combatants cannot disengage() if they do not have an action available.
+    """
+    this_combatant = Combatant(
+        max_hit_points=10, armor_class=15, attacks=test_attack_list
+    )
+    assert this_combatant.is_disengaging is False
+    this_combatant.start_turn()
+    this_combatant.disengage()
+    assert this_combatant.is_disengaging is True
+    this_combatant.end_turn()
+    assert this_combatant.is_disengaging is True
+    this_combatant.start_turn()
+    assert this_combatant.is_disengaging is False
+    this_combatant.action_available = False
+    with pytest.raises(ValueError):
+        this_combatant.disengage()
+
+
+def test_combatants_readied(test_attack_list):
+    """Tests make_ready() function and is_readied attribute.
+
+    1 - is_readied is True from the Disengage action being taken until the
+    start of the next turn.
+
+    2 - Combatant cannot make_ready() if they do not have an action available.
+    """
+    this_combatant = Combatant(
+        max_hit_points=10, armor_class=15, attacks=test_attack_list
+    )
+    assert this_combatant.is_readied is False
+    this_combatant.start_turn()
+    this_combatant.make_ready()
+    assert this_combatant.is_readied is True
+    this_combatant.end_turn()
+    assert this_combatant.is_readied is True
+    this_combatant.start_turn()
+    assert this_combatant.is_readied is False
+    this_combatant.action_available = False
+    with pytest.raises(ValueError):
+        this_combatant.make_ready()
+
+
+def test_take_readied_action(test_attack_list):
+    """is_readied becomes False when take_readied_action() is called."""
+    this_combatant = Combatant(
+        max_hit_points=10, armor_class=15, attacks=test_attack_list
+    )
+    assert this_combatant.is_readied is False
+    with pytest.raises(ValueError):
+        this_combatant.take_readied_action()
+    this_combatant.start_turn()
+    this_combatant.make_ready()
+    this_combatant.end_turn()
+    assert this_combatant.is_readied is True
+    this_combatant.take_readied_action()
+    assert this_combatant.is_readied is False

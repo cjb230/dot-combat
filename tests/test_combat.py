@@ -451,3 +451,39 @@ def test_manage_attack(mocker, test_combat):
         target_combatant=test_combat_6.combatant_list[1],
     )
     assert "makes a critical hit with a roll of 19" in test_combat_6.narrative_log
+
+
+def test_combatants_dodging(test_combat):
+    """combatants_dodging() tracks dodging combatants accurately."""
+    assert test_combat.combatants_dodging() == []
+    test_combat.combatant_list[0].start_turn()
+    test_combat.combatant_list[0].dodge()
+    assert test_combat.combatants_dodging() == [test_combat.combatant_list[0]]
+    test_combat.combatant_list[0].end_turn()
+    assert test_combat.combatants_dodging() == [test_combat.combatant_list[0]]
+    test_combat.combatant_list[0].start_turn()
+    assert test_combat.combatants_dodging() == []
+
+
+def test_combatants_disengaging(test_combat):
+    """combatants_disengaging() tracks disengaging combatants accurately."""
+    assert test_combat.combatants_disengaging() == []
+    test_combat.combatant_list[0].start_turn()
+    test_combat.combatant_list[0].disengage()
+    assert test_combat.combatants_disengaging() == [test_combat.combatant_list[0]]
+    test_combat.combatant_list[0].end_turn()
+    assert test_combat.combatants_disengaging() == [test_combat.combatant_list[0]]
+    test_combat.combatant_list[0].start_turn()
+    assert test_combat.combatants_disengaging() == []
+
+
+def test_combatants_readied(test_combat):
+    """combatants_readied() tracks readied combatants accurately."""
+    assert test_combat.combatants_readied() == []
+    test_combat.combatant_list[0].start_turn()
+    test_combat.combatant_list[0].make_ready()
+    assert test_combat.combatants_readied() == [test_combat.combatant_list[0]]
+    test_combat.combatant_list[0].end_turn()
+    assert test_combat.combatants_readied() == [test_combat.combatant_list[0]]
+    test_combat.combatant_list[0].start_turn()
+    assert test_combat.combatants_readied() == []
