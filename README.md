@@ -1,6 +1,5 @@
 # Dot Combat
 
-[![PyPI](https://img.shields.io/pypi/v/dot-combat.svg)][pypi_]
 [![Status](https://img.shields.io/pypi/status/dot-combat.svg)][status]
 [![Python Version](https://img.shields.io/pypi/pyversions/dot-combat)][python version]
 [![License](https://img.shields.io/github/license/cjb230/dot-combat)][license]
