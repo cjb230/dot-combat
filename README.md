@@ -3,8 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/dot-combat.svg)][pypi_]
 [![Status](https://img.shields.io/pypi/status/dot-combat.svg)][status]
 [![Python Version](https://img.shields.io/pypi/pyversions/dot-combat)][python version]
-[![License](https://img.shields.io/github/license/cjb230/dot-combat?style=plastic)][license]
-
+[![License](https://img.shields.io/github/license/cjb230/dot-combat)][license]
 
 [![Read the documentation at https://dot-combat.readthedocs.io/](https://img.shields.io/readthedocs/dot-combat/latest.svg?label=Read%20the%20Docs)][read the docs]
 [![Tests](https://github.com/cjb230/dot-combat/workflows/Tests/badge.svg)][tests]
