@@ -10,21 +10,6 @@ from dot_combat.helpers import FightingStatus
 from dot_combat.helpers import RemovalConditions
 
 
-@pytest.fixture
-def test_attack_list():
-    """Fixture for a one-item Attack list."""
-    shortsword: Attack = Attack(
-        name="Shortsword",
-        attack_bonus=0,
-        damage_dice="d6",
-        damage_type=DamageType.PIERCING,
-        damage_bonus=0,
-        range=5,
-        long_range=None,
-    )
-    return [shortsword]
-
-
 def test_combatant_creation_hit_points(test_attack_list) -> None:
     """Current_hit_points defaults to max_hit_points."""
     this_combatant = Combatant(
