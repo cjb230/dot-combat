@@ -3,26 +3,10 @@ import copy
 
 import pytest
 
-from dot_combat.attack import Attack
 from dot_combat.combatant import Combatant
 from dot_combat.helpers import DamageType
 from dot_combat.helpers import FightingStatus
 from dot_combat.helpers import RemovalConditions
-
-
-@pytest.fixture
-def test_attack_list():
-    """Fixture for a one-item Attack list."""
-    shortsword: Attack = Attack(
-        name="Shortsword",
-        attack_bonus=0,
-        damage_dice="d6",
-        damage_type=DamageType.PIERCING,
-        damage_bonus=0,
-        range=5,
-        long_range=None,
-    )
-    return [shortsword]
 
 
 def test_combatant_creation_hit_points(test_attack_list) -> None:
