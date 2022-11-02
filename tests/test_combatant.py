@@ -3,7 +3,6 @@ import copy
 
 import pytest
 
-from dot_combat.attack import Attack
 from dot_combat.combatant import Combatant
 from dot_combat.helpers import DamageType
 from dot_combat.helpers import FightingStatus

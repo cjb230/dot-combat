@@ -4,7 +4,6 @@ import copy
 import pytest
 
 import dot_combat.helpers as h
-from dot_combat.attack import Attack
 from dot_combat.combat import Combat
 from dot_combat.combatant import Combatant
 

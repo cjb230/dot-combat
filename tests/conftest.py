@@ -1,3 +1,4 @@
+"""Shared fixtures for whole package."""
 import pytest
 
 import dot_combat.helpers as h
